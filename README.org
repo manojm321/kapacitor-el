@@ -1,0 +1,52 @@
+* kapacitor-el
+
+  Emacs magit interface to [[https://docs.influxdata.com/kapacitor/][Kapacitor]]
+
+* Installation
+
+  #+BEGIN_SRC sh
+    git clone http://github.com/Manoj321/kapacitor-el ~/.emacs.d/site-lisp/kapacitor-el  
+  #+END_SRC
+
+  Add the following to init.el
+  #+BEGIN_SRC emacs-lisp
+    (add-to-list 'load-path "~/.emacs.d/site-lisp/kapacitor-el/")
+    (require 'kapacitor)
+  #+END_SRC
+
+** Optional
+
+   If you want the tick script to be syntax highlighted install [[https://github.com/msherry/tickscript-mode][tickscript-mode]]
+
+   *M-x package-install tickscript-mode*
+
+* Usage
+
+** Setup kapacitor-url
+
+   #+BEGIN_SRC emacs-lisp
+     (setq kapacitor-url "http://<localhost>:<9092>")
+   #+END_SRC
+
+** Display Tasks
+
+   *M-x kapacitor-overview*
+
+** Key Bindings
+
+   |-----+-----------------------------------------|
+   | Key | Description                             |
+   |-----+-----------------------------------------|
+   | RET | If point on task, kapacitor show task   |
+   | s-s | If point on task, kapacitor show task   |
+   | S-g | show general stats                      |
+   | S-i | show ingress stats(not implemented yet) |
+   |-----+-----------------------------------------|
+
+* License
+
+  [[file:LICENSE][GNU GPLv3.0]]
+
+* Contribute
+
+  Yes please! open github [[https://github.com/Manoj321/kapacitor-el/issues][issues]]
