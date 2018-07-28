@@ -18,7 +18,9 @@
 
    If you want the tick script to be syntax highlighted install [[https://github.com/msherry/tickscript-mode][tickscript-mode]]
 
-   *M-x package-install tickscript-mode*
+   #+BEGIN_SRC
+   M-x package-install tickscript-mode
+   #+END_SRC
 
 * Usage
 
@@ -30,7 +32,10 @@
 
 ** Display Tasks
 
-   *M-x kapacitor-overview*
+   #+BEGIN_SRC
+   M-x kapacitor-overview
+   #+END_SRC
+
 
 ** Key Bindings
 
