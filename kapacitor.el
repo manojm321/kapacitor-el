@@ -1,4 +1,7 @@
+;;; kapacitor.el --- Main file for kapacitor mode.
 ;;; -*- lexical-binding: t -*-
+;;; Commentary:
+;;; Code:
 (require 'magit)
 (require 'magit-popup)
 (require 'subr-x)
@@ -6,13 +9,16 @@
 (require 'kapacitor-vars)
 
 (defun kapacitor-overview()
+  "Display kapacitor overview in a buffer."
     (interactive)
     (kapacitor-get-tasks 'kapacitor-populate-tasks))
 
 (defun kapacitor-overview-refresh()
+  "Refresh kapacitor overview."
   (kapacitor-overview))
 
 (defun kapacitor--format-task-line(task)
+  "Format a given TASK to be diplayed in kapacitor-overview."
   (let ((id (cdr-safe (assoc 'id task)))
         (type (cdr-safe (assoc 'type task)))
         (status (cdr-safe (assoc 'status task)))
@@ -30,6 +36,7 @@
      'kapacitor-nav id)))
 
 (defun kapacitor-populate-tasks(response)
+  "Populate kapacitor tasks RESPONSE."
   (let* ((buf (get-buffer-create kapacitor-buffer-name)))
     (with-current-buffer buf
       (let* ((tasks (cdr-safe (assoc 'tasks response)))
@@ -48,12 +55,14 @@
         (goto-char (point-min))))))
 
 (defun kapacitor-show-task-info(point)
+  "Run kapacitor show task command on task at POINT."
   (interactive (list (point)))
   (let* ((taskid (get-text-property (point) 'kapacitor-nav)))
     (if taskid
         (kapacitor-get-task-info 'kapacitor-populate-task-info taskid ))))
 
 (defun kapacitor-maybe-fontify-tickscript(script)
+  "If available, return syntax highlighted SCRIPT with tickscript-mode."
   (if (featurep 'tickscript-mode)
       (with-temp-buffer
         (insert script)
@@ -64,6 +73,7 @@
     script))
 
 (defun kapacitor-populate-task-info(response)
+  "Populate given task info RESPONSE into a buffer."
   (let* ((task-buf (get-buffer-create "*kapacitor task info*")))
     (with-current-buffer task-buf
       (let* ((inhibit-read-only t)
@@ -108,6 +118,7 @@
         (pop-to-buffer task-buf)))))
 
 (defun kapacitor-show-stats-general()
+  "Show kapacitor general stats in a buffer."
   (interactive)
   (let ((buf (get-buffer-create "*kapacitor stats general*"))
         (inhibit-read-only t))
@@ -118,6 +129,7 @@
     (kapacitor-get-debug-vars 'kapacitor-populate-stats-general)))
 
 (defun kapacitor-populate-stats-general(response)
+  "Populate kapacitor general stats RESPONSE."
   (let* ((buf (get-buffer-create "*kapacitor stats general*"))
          (cluster-id (cdr-safe (assoc 'cluster_id response)))
          (server-id (cdr-safe (assoc 'server_id response)))
@@ -192,4 +204,4 @@
   (buffer-disable-undo))
 
 (provide 'kapacitor)
-
+;;; kapacitor ends here

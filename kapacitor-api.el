@@ -1,8 +1,13 @@
+;;; kapacitor-api.el --- Functions to query kapacitor endpoints.
 ;;; -*- lexical-binding: t -*-
+;;; Commentary:
+;;; Code:
+
 (require 'kapacitor-vars)
 (require 'subr-x)
 
 (defun kapacitor-process-kill-quietly (proc)
+  "Kill kapacitor sentinel process PROC quitely."
   (when proc
     (set-process-sentinel proc nil)
     (set-process-query-on-exit-flag proc nil)
@@ -13,7 +18,7 @@
       (ignore-errors (kill-buffer buf)))))
 
 (defun kapacitor-curl-ep (ep on-success)
-  "Curls the endpoint and calls on-success if the exit code is 0"
+  "Curl the endpoint EP and call ON-SUCCESS if the exit code is 0."
   (let* ((buf (generate-new-buffer " kapacitor"))
          (err-buf (generate-new-buffer " kapacitor-err"))
          (command (list "curl" (concat kapacitor-url ep)))
@@ -40,7 +45,7 @@
       (add-hook 'kill-buffer-hook (ignore-errors (kill-buffer err-buf))))))
 
 (defun kapacitor-get-tasks (cb)
-  "Fetches all tasks"
+  "Fetch all tasks and call CB with resulting json string."
   (kapacitor-curl-ep "/kapacitor/v1/tasks?fields=executing&fields=status&fields=type"
                      (lambda (buf)
                        (let ((json (with-current-buffer buf
@@ -48,7 +53,7 @@
                          (funcall cb json)))))
 
 (defun kapacitor-get-task-info (cb taskid)
-  "Fetches task info"
+  "Fetch task info for TASKID and call CB with resulting json."
   (kapacitor-curl-ep (concat "/kapacitor/v1/tasks/" taskid)
                      (lambda (buf)
                        (let ((json (with-current-buffer buf
@@ -56,7 +61,7 @@
                          (funcall cb json)))))
 
 (defun kapacitor-get-debug-vars (cb)
-  "Fetches debug vars"
+  "Fetch debug vars and call CB with resulting json string."
   (kapacitor-curl-ep "/kapacitor/v1/debug/vars"
                      (lambda (buf)
                        (let ((json (with-current-buffer buf
@@ -64,3 +69,4 @@
                          (funcall cb json)))))
 
 (provide 'kapacitor-api)
+;;; kapacitor-api ends here
