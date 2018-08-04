@@ -160,6 +160,11 @@
       (view-mode)
       (pop-to-buffer buf))))
 
+(defgroup kapacitor nil
+  "Emacs porcelain for Kapacitor."
+  :group 'tools
+  :prefix "kapacitor-")
+
 (magit-define-popup kapacitor-show-task-popup
   "Popup console for show command."
   :group 'kapacitor
