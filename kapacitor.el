@@ -26,7 +26,7 @@
   (kapacitor-overview))
 
 (defun kapacitor--format-task-line(task)
-  "Format a given TASK to be diplayed in kapacitor-overview."
+  "Format a given TASK to be diplayed in ‘kapacitor-overview’."
   (let ((id (cdr-safe (assoc 'id task)))
         (type (cdr-safe (assoc 'type task)))
         (status (cdr-safe (assoc 'status task)))
