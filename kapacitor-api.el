@@ -27,8 +27,8 @@
   "Curl the endpoint EP and call ON-SUCCESS if the exit code is 0."
   (let* ((buf (generate-new-buffer " kapacitor"))
          (err-buf (generate-new-buffer " kapacitor-err"))
-         (command (list "curl" (concat kapacitor-url ep)))
-         (proc (make-process
+         (command (list "curl" (concat kapacitor-url ep))))
+         (make-process
                 :name "kapacitor"
                 :buffer buf
                 :stderr err-buf
@@ -36,7 +36,7 @@
                 :noquery t
                 :connection-type 'pipe'
                 :sentinel
-                (lambda (proc status)
+                (lambda (proc _)
                   (unwind-protect
                       (let* ((exit-code (process-exit-status proc)))
                         (cond
@@ -44,7 +44,7 @@
                           (funcall on-success buf))
                          (t
                           (message (format "Failed with exit code %d" exit-code)))))
-                    (kapacitor-process-kill-quietly proc))))))
+                    (kapacitor-process-kill-quietly proc))))
 
     ;; Clean up stderr buffer when stdout buffer is killed.
     (with-current-buffer buf
