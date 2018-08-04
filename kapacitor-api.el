@@ -12,7 +12,7 @@
 (require 'kapacitor-vars)
 (require 'subr-x)
 
-(defun kapacitor-process-kill-quietly (proc)
+(defun kapacitor-process-kill-quietly(proc)
   "Kill kapacitor sentinel process PROC quitely."
   (when proc
     (set-process-sentinel proc nil)
@@ -23,7 +23,7 @@
       (ignore-errors (delete-process proc))
       (ignore-errors (kill-buffer buf)))))
 
-(defun kapacitor-curl-ep (ep on-success)
+(defun kapacitor-curl-ep(ep on-success)
   "Curl the endpoint EP and call ON-SUCCESS if the exit code is 0."
   (let* ((buf (generate-new-buffer " kapacitor"))
          (err-buf (generate-new-buffer " kapacitor-err"))
@@ -36,7 +36,7 @@
                 :noquery t
                 :connection-type 'pipe'
                 :sentinel
-                (lambda (proc _)
+                (lambda(proc _)
                   (unwind-protect
                       (let* ((exit-code (process-exit-status proc)))
                         (cond
@@ -50,26 +50,26 @@
     (with-current-buffer buf
       (add-hook 'kill-buffer-hook (ignore-errors (kill-buffer err-buf))))))
 
-(defun kapacitor-get-tasks (cb)
+(defun kapacitor-get-tasks(cb)
   "Fetch all tasks and call CB with resulting json string."
   (kapacitor-curl-ep "/kapacitor/v1/tasks?fields=executing&fields=status&fields=type"
-                     (lambda (buf)
+                     (lambda(buf)
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
                          (funcall cb json)))))
 
-(defun kapacitor-get-task-info (cb taskid)
+(defun kapacitor-get-task-info(cb taskid)
   "Fetch task info for TASKID and call CB with resulting json."
   (kapacitor-curl-ep (concat "/kapacitor/v1/tasks/" taskid)
-                     (lambda (buf)
+                     (lambda(buf)
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
                          (funcall cb json)))))
 
-(defun kapacitor-get-debug-vars (cb)
+(defun kapacitor-get-debug-vars(cb)
   "Fetch debug vars and call CB with resulting json string."
   (kapacitor-curl-ep "/kapacitor/v1/debug/vars"
-                     (lambda (buf)
+                     (lambda(buf)
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
                          (funcall cb json)))))
