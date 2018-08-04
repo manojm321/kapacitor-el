@@ -1,6 +1,13 @@
-;;; kapacitor.el --- Main file for kapacitor mode.
-;;; -*- lexical-binding: t -*-
+;;; kapacitor.el --- Main file for kapacitor-mode    -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2018  Manoj Kumar Manikchand
+
+;; Author: Manoj Kumar Manikchand <manojm.321@gmail.com>
+;; URL: http://github.com/Manoj321/kapacitor-el
+;; Keywords: kapacitor, emacs, magit
+
 ;;; Commentary:
+
 ;;; Code:
 (require 'magit)
 (require 'magit-popup)
@@ -204,4 +211,5 @@
   (buffer-disable-undo))
 
 (provide 'kapacitor)
-;;; kapacitor ends here
+
+;;; kapacitor.el ends here

@@ -1,8 +1,14 @@
-;;; kapacitor-api.el --- Functions to query kapacitor endpoints.
-;;; -*- lexical-binding: t -*-
-;;; Commentary:
-;;; Code:
+;;; kapacitor-api.el --- Functions to query kapacitor endpoints  -*- lexical-binding: t; -*-
 
+;; Copyright (C) 2018  Manoj Kumar Manikchand
+
+;; Author: Manoj Kumar Manikchand <manojm.321@gmail.com>
+;; URL: http://github.com/Manoj321/kapacitor-el
+;; Keywords: kapacitor, emacs, magit
+
+;;; Commentary:
+
+;;; Code:
 (require 'kapacitor-vars)
 (require 'subr-x)
 
@@ -69,4 +75,5 @@
                          (funcall cb json)))))
 
 (provide 'kapacitor-api)
-;;; kapacitor-api ends here
+
+;;; kapacitor-api.el ends here
