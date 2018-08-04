@@ -62,15 +62,15 @@
         (pop-to-buffer buf)
         (goto-char (point-min))))))
 
-(defun kapacitor-show-task-info(point)
-  "Run kapacitor show task command on task at POINT."
-  (interactive (list (point)))
+(defun kapacitor-show-task-info()
+  "Run kapacitor show task command on task at point."
+  (interactive)
   (let* ((taskid (get-text-property (point) 'kapacitor-nav)))
     (if taskid
         (kapacitor-get-task-info 'kapacitor-populate-task-info taskid ))))
 
 (defun kapacitor-maybe-fontify-tickscript(script)
-  "If available, return syntax highlighted SCRIPT with tickscript-mode."
+  "If available, return syntax highlighted SCRIPT with ‘tickscript-mode’."
   (if (featurep 'tickscript-mode)
       (with-temp-buffer
         (insert script)
