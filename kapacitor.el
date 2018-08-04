@@ -15,6 +15,7 @@
 (require 'kapacitor-api)
 (require 'kapacitor-vars)
 
+;;;###autoload
 (defun kapacitor-overview()
   "Display kapacitor overview in a buffer."
     (interactive)
@@ -203,6 +204,7 @@
     keymap)
   "Keymap for `kapacitor-mode'." )
 
+;;;###autoload
 (define-derived-mode kapacitor-mode special-mode "Kapacitor"
   "Base mode for Kapacitor modes.
 
