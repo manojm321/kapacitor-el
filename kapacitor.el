@@ -30,7 +30,7 @@
 (defconst kapacitor-buffer-name "*kapacitor*")
 
 (defgroup kapacitor nil
-  "Emacs porcelain for Kapacitor."
+  "A magit like interface for Kapacitor."
   :group 'tools
   :prefix "kapacitor-")
 

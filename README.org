@@ -1,6 +1,6 @@
 * kapacitor-el
 
-  Emacs magit interface to [[https://docs.influxdata.com/kapacitor/][Kapacitor]]
+  A magit like interface for [[https://docs.influxdata.com/kapacitor/][Kapacitor]]
 
 * Installation
 
