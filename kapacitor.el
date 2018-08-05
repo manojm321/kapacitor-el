@@ -63,7 +63,7 @@
 ;;;; Functions
 ;;;;; Kapacitor api
 
-(defun kapacitor-process-kill-quietly(proc)
+(defun kapacitor-process-kill-quietly (proc)
   "Kill kapacitor sentinel process PROC quitely."
   (when proc
     (set-process-sentinel proc nil)
@@ -74,7 +74,7 @@
       (ignore-errors (delete-process proc))
       (ignore-errors (kill-buffer buf)))))
 
-(defun kapacitor-curl-ep(ep on-success)
+(defun kapacitor-curl-ep (ep on-success)
   "Curl the endpoint EP and call ON-SUCCESS if the exit code is 0."
   (let* ((buf (generate-new-buffer " kapacitor"))
          (err-buf (generate-new-buffer " kapacitor-err"))
@@ -87,7 +87,7 @@
                 :noquery t
                 :connection-type 'pipe'
                 :sentinel
-                (lambda(proc _)
+                (lambda (proc _)
                   (unwind-protect
                       (let* ((exit-code (process-exit-status proc)))
                         (cond
@@ -101,37 +101,37 @@
     (with-current-buffer buf
       (add-hook 'kill-buffer-hook (ignore-errors (kill-buffer err-buf))))))
 
-(defun kapacitor-get-tasks(cb)
+(defun kapacitor-get-tasks (cb)
   "Fetch all tasks and call CB with resulting json string."
   (kapacitor-curl-ep "/kapacitor/v1/tasks?fields=executing&fields=status&fields=type"
-                     (lambda(buf)
+                     (lambda (buf)
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
                          (funcall cb json)))))
 
-(defun kapacitor-get-task-info(cb taskid)
+(defun kapacitor-get-task-info (cb taskid)
   "Fetch task info for TASKID and call CB with resulting json."
   (kapacitor-curl-ep (concat "/kapacitor/v1/tasks/" taskid)
-                     (lambda(buf)
+                     (lambda (buf)
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
                          (funcall cb json)))))
 
-(defun kapacitor-get-debug-vars(cb)
+(defun kapacitor-get-debug-vars (cb)
   "Fetch debug vars and call CB with resulting json string."
   (kapacitor-curl-ep "/kapacitor/v1/debug/vars"
-                     (lambda(buf)
+                     (lambda (buf)
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
                          (funcall cb json)))))
 
 ;;;;; kapacitor-mode functions
 
-(defun kapacitor-overview-refresh()
+(defun kapacitor-overview-refresh ()
   "Refresh kapacitor overview."
   (kapacitor-overview))
 
-(defun kapacitor--format-task-line(task)
+(defun kapacitor--format-task-line (task)
   "Format a given TASK to be diplayed in ‘kapacitor-overview’."
   (let ((id (cdr-safe (assoc 'id task)))
         (type (cdr-safe (assoc 'type task)))
@@ -149,7 +149,7 @@
              (propertize executing 'face task-face))
      'kapacitor-nav id)))
 
-(defun kapacitor-populate-tasks(response)
+(defun kapacitor-populate-tasks (response)
   "Populate kapacitor tasks RESPONSE."
   (let* ((buf (get-buffer-create kapacitor-buffer-name)))
     (with-current-buffer buf
@@ -169,14 +169,14 @@
         (pop-to-buffer buf)
         (goto-char (point-min))))))
 
-(defun kapacitor-show-task-info()
+(defun kapacitor-show-task-info ()
   "Run kapacitor show task command on task at point."
   (interactive)
   (let* ((taskid (get-text-property (point) 'kapacitor-nav)))
     (if taskid
         (kapacitor-get-task-info 'kapacitor-populate-task-info taskid ))))
 
-(defun kapacitor-maybe-fontify-tickscript(script)
+(defun kapacitor-maybe-fontify-tickscript (script)
   "If available, return syntax highlighted SCRIPT with ‘tickscript-mode’."
   (if (featurep 'tickscript-mode)
       (with-temp-buffer
@@ -187,7 +187,7 @@
         (buffer-string))
     script))
 
-(defun kapacitor-populate-task-info(response)
+(defun kapacitor-populate-task-info (response)
   "Populate given task info RESPONSE into a buffer."
   (let* ((task-buf (get-buffer-create "*kapacitor task info*")))
     (with-current-buffer task-buf
@@ -235,7 +235,7 @@
         (view-mode)
         (pop-to-buffer task-buf)))))
 
-(defun kapacitor-show-stats-general()
+(defun kapacitor-show-stats-general ()
   "Show kapacitor general stats in a buffer."
   (interactive)
   (let ((buf (get-buffer-create "*kapacitor stats general*"))
@@ -246,7 +246,7 @@
       (pop-to-buffer buf))
     (kapacitor-get-debug-vars 'kapacitor-populate-stats-general)))
 
-(defun kapacitor-populate-stats-general(response)
+(defun kapacitor-populate-stats-general (response)
   "Populate kapacitor general stats RESPONSE."
   (let* ((buf (get-buffer-create "*kapacitor stats general*"))
          (cluster-id (cdr-safe (assoc 'cluster_id response)))
@@ -296,7 +296,7 @@
 ;;;;; Commands
 
 ;;;###autoload
-(defun kapacitor-overview()
+(defun kapacitor-overview ()
   "Display kapacitor overview in a buffer."
     (interactive)
     (kapacitor-get-tasks 'kapacitor-populate-tasks))
