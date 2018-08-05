@@ -5,10 +5,12 @@
 ;; Author: Manoj Kumar Manikchand <manojm.321@gmail.com>
 ;; URL: http://github.com/Manoj321/kapacitor-el
 ;; Keywords: kapacitor, emacs, magit
+;; Package-Requires: ((emacs "25.1") (subr-x))
 
 ;;; Commentary:
 
 ;;; Code:
+
 (require 'kapacitor-vars)
 (require 'subr-x)
 
