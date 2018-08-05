@@ -4,24 +4,128 @@
 
 ;; Author: Manoj Kumar Manikchand <manojm.321@gmail.com>
 ;; URL: http://github.com/Manoj321/kapacitor-el
-;; Keywords: kapacitor, emacs, magit
-;; Package-Requires: ((emacs "25.1") (Magit 2.13.0) (subr-x) (magit-popup 20180618))
+;; Keywords: kapacitor, emacs, magit, tools
+;; Package-Requires: ((emacs "25.1") (magit "2.13.0") (magit-popup "2.12.4"))
+;; Version: 0.0.1
 
 ;;; Commentary:
+;; This package implements a magit like interface for kapacitor
 
 ;;; Code:
+;;;; Dependencies
 
+(require 'json)
 (require 'magit)
 (require 'magit-popup)
 (require 'subr-x)
-(require 'kapacitor-api)
-(require 'kapacitor-vars)
+
+;;; Options
+;;;; Customizations
+
+(defcustom kapacitor-url "http://localhost:9092"
+  "The kapacitor server url."
+  :group 'kapacitor
+  :type 'string)
+
+(defconst kapacitor-buffer-name "*kapacitor*")
+
+(defgroup kapacitor nil
+  "Emacs porcelain for Kapacitor."
+  :group 'tools
+  :prefix "kapacitor-")
+
+;;;; Variables
+;;;;; Keymap
 
 ;;;###autoload
-(defun kapacitor-overview()
-  "Display kapacitor overview in a buffer."
-    (interactive)
-    (kapacitor-get-tasks 'kapacitor-populate-tasks))
+(defvar kapacitor-mode-map
+  (let ((keymap (make-sparse-keymap)))
+    ;; Section controls
+    (define-key keymap (kbd "p")   #'magit-section-backward)
+    (define-key keymap (kbd "n")   #'magit-section-forward)
+    (define-key keymap (kbd "M-p") #'magit-section-backward-sibling)
+    (define-key keymap (kbd "M-n") #'magit-section-forward-sibling)
+    (define-key keymap (kbd "C-i") #'magit-section-toggle)
+    (define-key keymap (kbd "^")   #'magit-section-up)
+    (define-key keymap [tab]       #'magit-section-toggle)
+    (define-key keymap (kbd "q")   #'quit-window)
+    (define-key keymap (kbd "g")   #'kapacitor-overview-refresh)
+    (define-key keymap (kbd "RET") #'kapacitor-show-task-info)
+
+    ;; popups
+    (define-key keymap (kbd "?") #'kapacitor-overview-popup)
+    (define-key keymap (kbd "s") #'kapacitor-show-task-popup)
+    (define-key keymap (kbd "S") #'kapacitor-show-stats-popup)
+
+    keymap)
+  "Keymap for `kapacitor-mode'." )
+
+;;;; Functions
+;;;;; Kapacitor api
+
+(defun kapacitor-process-kill-quietly(proc)
+  "Kill kapacitor sentinel process PROC quitely."
+  (when proc
+    (set-process-sentinel proc nil)
+    (set-process-query-on-exit-flag proc nil)
+    (let ((kill-buffer-query-functions nil)
+          (buf (process-buffer proc)))
+      (ignore-errors (kill-process proc))
+      (ignore-errors (delete-process proc))
+      (ignore-errors (kill-buffer buf)))))
+
+(defun kapacitor-curl-ep(ep on-success)
+  "Curl the endpoint EP and call ON-SUCCESS if the exit code is 0."
+  (let* ((buf (generate-new-buffer " kapacitor"))
+         (err-buf (generate-new-buffer " kapacitor-err"))
+         (command (list "curl" (concat kapacitor-url ep))))
+         (make-process
+                :name "kapacitor"
+                :buffer buf
+                :stderr err-buf
+                :command command
+                :noquery t
+                :connection-type 'pipe'
+                :sentinel
+                (lambda(proc _)
+                  (unwind-protect
+                      (let* ((exit-code (process-exit-status proc)))
+                        (cond
+                         ((zerop exit-code)
+                          (funcall on-success buf))
+                         (t
+                          (message (format "Failed with exit code %d" exit-code)))))
+                    (kapacitor-process-kill-quietly proc))))
+
+    ;; Clean up stderr buffer when stdout buffer is killed.
+    (with-current-buffer buf
+      (add-hook 'kill-buffer-hook (ignore-errors (kill-buffer err-buf))))))
+
+(defun kapacitor-get-tasks(cb)
+  "Fetch all tasks and call CB with resulting json string."
+  (kapacitor-curl-ep "/kapacitor/v1/tasks?fields=executing&fields=status&fields=type"
+                     (lambda(buf)
+                       (let ((json (with-current-buffer buf
+                                     (json-read-from-string (buffer-string)))))
+                         (funcall cb json)))))
+
+(defun kapacitor-get-task-info(cb taskid)
+  "Fetch task info for TASKID and call CB with resulting json."
+  (kapacitor-curl-ep (concat "/kapacitor/v1/tasks/" taskid)
+                     (lambda(buf)
+                       (let ((json (with-current-buffer buf
+                                     (json-read-from-string (buffer-string)))))
+                         (funcall cb json)))))
+
+(defun kapacitor-get-debug-vars(cb)
+  "Fetch debug vars and call CB with resulting json string."
+  (kapacitor-curl-ep "/kapacitor/v1/debug/vars"
+                     (lambda(buf)
+                       (let ((json (with-current-buffer buf
+                                     (json-read-from-string (buffer-string)))))
+                         (funcall cb json)))))
+
+;;;;; kapacitor-mode functions
 
 (defun kapacitor-overview-refresh()
   "Refresh kapacitor overview."
@@ -55,8 +159,9 @@
         (erase-buffer)
         (insert (format "%-11s : %s\n" "Server" kapacitor-url))
         (insert (format "%-11s : %d\n" "Total Tasks" (seq-length tasks)))
-        (insert (propertize (format "%-60s %-8s %-9s %-4s\n" "ID" "Type" "Status" "Executing")
-                                            'face 'magit-section-heading))
+        (insert (propertize (format "%-60s %-8s %-9s %-4s\n"
+                                    "ID" "Type" "Status" "Executing")
+                            'face 'magit-section-heading))
           (dolist (task-line task-lines)
             (insert task-line))
 
@@ -111,13 +216,16 @@
         (insert (format "Executing   : %s\n" executing))
         (insert (format "Created     : %s (%s)\n"
                         (format-time-string "%FT%T %Z" (date-to-time created))
-                        (format-time-string "%FT%T %Z" (date-to-time created) "UTC")))
+                        (format-time-string "%FT%T %Z"
+                                            (date-to-time created) "UTC")))
         (insert (format "Modified    : %s (%s)\n"
                         (format-time-string "%FT%T %Z" (date-to-time modified))
-                        (format-time-string "%FT%T %Z" (date-to-time modified) "UTC")))
+                        (format-time-string "%FT%T %Z"
+                                            (date-to-time modified) "UTC")))
         (insert (format "LastEnabled : %s (%s)\n"
                         (format-time-string "%FT%T %Z" (date-to-time last-enabled))
-                        (format-time-string "%FT%T %Z" (date-to-time last-enabled) "UTC")))
+                        (format-time-string "%FT%T %Z"
+                                            (date-to-time last-enabled) "UTC")))
         (insert (format "DBRP        : \"%s\".\"%s\"\n" db rp))
         (insert "TICKscript:\n")
         (insert (kapacitor-maybe-fontify-tickscript script))
@@ -162,10 +270,7 @@
       (view-mode)
       (pop-to-buffer buf))))
 
-(defgroup kapacitor nil
-  "Emacs porcelain for Kapacitor."
-  :group 'tools
-  :prefix "kapacitor-")
+;;;;; magit popups
 
 (magit-define-popup kapacitor-show-task-popup
   "Popup console for show command."
@@ -188,28 +293,13 @@
     (?s "Show" kapacitor-show-task-popup)
     (?S "Stats" kapacitor-show-stats-popup)))
 
+;;;;; Commands
+
 ;;;###autoload
-(defvar kapacitor-mode-map
-  (let ((keymap (make-sparse-keymap)))
-    ;; Section controls
-    (define-key keymap (kbd "p")   #'magit-section-backward)
-    (define-key keymap (kbd "n")   #'magit-section-forward)
-    (define-key keymap (kbd "M-p") #'magit-section-backward-sibling)
-    (define-key keymap (kbd "M-n") #'magit-section-forward-sibling)
-    (define-key keymap (kbd "C-i") #'magit-section-toggle)
-    (define-key keymap (kbd "^")   #'magit-section-up)
-    (define-key keymap [tab]       #'magit-section-toggle)
-    (define-key keymap (kbd "q")   #'quit-window)
-    (define-key keymap (kbd "g")   #'kapacitor-overview-refresh)
-    (define-key keymap (kbd "RET") #'kapacitor-show-task-info)
-
-    ;; popups
-    (define-key keymap (kbd "?") #'kapacitor-overview-popup)
-    (define-key keymap (kbd "s") #'kapacitor-show-task-popup)
-    (define-key keymap (kbd "S") #'kapacitor-show-stats-popup)
-
-    keymap)
-  "Keymap for `kapacitor-mode'." )
+(defun kapacitor-overview()
+  "Display kapacitor overview in a buffer."
+    (interactive)
+    (kapacitor-get-tasks 'kapacitor-populate-tasks))
 
 ;;;###autoload
 (define-derived-mode kapacitor-mode special-mode "Kapacitor"
