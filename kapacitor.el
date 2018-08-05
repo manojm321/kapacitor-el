@@ -9,7 +9,7 @@
 ;; Version: 0.0.1
 
 ;;; Commentary:
-;; This package implements a magit like interface for kapacitor
+;; A magit like interface for kapacitor
 
 ;;; Code:
 ;;;; Dependencies
