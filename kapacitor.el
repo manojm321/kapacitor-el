@@ -129,6 +129,7 @@
 
 (defun kapacitor-overview-refresh ()
   "Refresh kapacitor overview."
+  (interactive)
   (kapacitor-overview))
 
 (defun kapacitor--format-task-line (task)
