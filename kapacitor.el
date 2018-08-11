@@ -22,10 +22,11 @@
 ;;; Options
 ;;;; Customizations
 
-(defcustom kapacitor-url "http://localhost:9092"
-  "The kapacitor server url."
-  :group 'kapacitor
-  :type 'string)
+(defvar kapacitor-url "http://localhost:9092"
+  "Current configured kapacitor server url.")
+
+(defvar kapacitor-url-list (list kapacitor-url)
+  "List of kapacitor server urls.")
 
 (defconst kapacitor-buffer-name "*kapacitor*")
 
@@ -51,6 +52,7 @@
     (define-key keymap (kbd "q")   #'quit-window)
     (define-key keymap (kbd "g")   #'kapacitor-overview-refresh)
     (define-key keymap (kbd "RET") #'kapacitor-show-task-info)
+    (define-key keymap (kbd "c")   #'kapacitor-set-url)
 
     ;; popups
     (define-key keymap (kbd "?") #'kapacitor-overview-popup)
@@ -74,8 +76,11 @@
       (ignore-errors (delete-process proc))
       (ignore-errors (kill-buffer buf)))))
 
-(defun kapacitor-curl-ep (ep on-success)
-  "Curl the endpoint EP and call ON-SUCCESS if the exit code is 0."
+(defun kapacitor-curl-ep (ep on-success &optional on-error)
+  "Curl the endpoint EP and call ON-SUCCESS if the exit code is 0.
+
+call ON-ERROR on any other exit code.  Both callbacks will receive
+the result of the call as an argument."
   (let* ((buf (generate-new-buffer " kapacitor"))
          (err-buf (generate-new-buffer " kapacitor-err"))
          (command (list "curl" (concat kapacitor-url ep))))
@@ -94,20 +99,25 @@
                          ((zerop exit-code)
                           (funcall on-success buf))
                          (t
-                          (message (format "Failed with exit code %d" exit-code)))))
+                          (if on-error
+                              (funcall on-error err-buf)
+                            (message (format "%s Failed with exit code %d" command exit-code))))))
                     (kapacitor-process-kill-quietly proc))))
 
     ;; Clean up stderr buffer when stdout buffer is killed.
     (with-current-buffer buf
       (add-hook 'kill-buffer-hook (ignore-errors (kill-buffer err-buf))))))
 
-(defun kapacitor-get-tasks (cb)
-  "Fetch all tasks and call CB with resulting json string."
+(defun kapacitor-get-tasks (cb &optional cb-err)
+  "Fetch all tasks and call CB with resulting json string.
+
+On error call CB-ERR with err buffer."
   (kapacitor-curl-ep "/kapacitor/v1/tasks?fields=executing&fields=status&fields=type"
                      (lambda (buf)
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
-                         (funcall cb json)))))
+                         (funcall cb json)))
+                     cb-err))
 
 (defun kapacitor-get-task-info (cb taskid)
   "Fetch task info for TASKID and call CB with resulting json."
@@ -272,6 +282,16 @@
       (view-mode)
       (pop-to-buffer buf))))
 
+(defun kapacitor-set-url (&rest _)
+  "Set `kapacitor-url`."
+  (interactive)
+  (let* ((server-url (completing-read "Server URL: " kapacitor-url-list)))
+    (if (member server-url kapacitor-url-list)
+        (setq kapacitor-url server-url)
+      (push server-url kapacitor-url-list)))
+  (kapacitor-overview t))
+
+
 ;;;;; magit popups
 
 (magit-define-popup kapacitor-show-task-popup
@@ -291,17 +311,24 @@
   "Popup console for showing an overview of available popup commands."
   :group 'kapacitor
   :actions
-  '("Popup commands"
-    (?s "Show" kapacitor-show-task-popup)
+  '("Environment"
+    (?c "Change Configuration" kapacitor-set-url)
+    "Popup commands"
     (?S "Stats" kapacitor-show-stats-popup)))
 
 ;;;;; Commands
 
 ;;;###autoload
-(defun kapacitor-overview ()
-  "Display kapacitor overview in a buffer."
-    (interactive)
-    (kapacitor-get-tasks 'kapacitor-populate-tasks))
+(defun kapacitor-overview (&optional quiet)
+  "Display kapacitor overview in a buffer.
+
+If QUIET is set then additional questions are not asked in case
+the server is not reachable."
+
+  (interactive)
+  (if quiet
+      (kapacitor-get-tasks 'kapacitor-populate-tasks)
+    (kapacitor-get-tasks 'kapacitor-populate-tasks 'kapacitor-set-url)))
 
 ;;;###autoload
 (define-derived-mode kapacitor-mode special-mode "Kapacitor"

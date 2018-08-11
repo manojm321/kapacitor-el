@@ -27,7 +27,7 @@
 ** Setup kapacitor-url
 
    #+BEGIN_SRC emacs-lisp
-     (setq kapacitor-url "http://<localhost>:<9092>")
+     (setq kapacitor-url-list ("http://localhost:9092" "http://server:10000"))
    #+END_SRC
 
 ** Display Tasks
@@ -39,14 +39,15 @@
 
 ** Key Bindings
 
-   |-----+-----------------------------------------|
-   | Key | Description                             |
-   |-----+-----------------------------------------|
-   | RET | If point on task, kapacitor show task   |
-   | s-s | If point on task, kapacitor show task   |
-   | S-g | show general stats                      |
-   | S-i | show ingress stats(not implemented yet) |
-   |-----+-----------------------------------------|
+   |-----+--------------------------------------------|
+   | Key | Description                                |
+   |-----+--------------------------------------------|
+   | RET | If point on task, kapacitor show task info |
+   | c   | change kapacitor server url                |
+   | g   | refresh overview                           |
+   | S-g | show general stats                         |
+   | S-i | show ingress stats(not implemented yet)    |
+   |-----+--------------------------------------------|
 
 * License
 
