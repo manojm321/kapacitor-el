@@ -142,7 +142,7 @@
       ('t (setq executing "true"))
       (:json-false (setq executing "false" task-face 'warning)))
     (propertize
-     (format "%-60s %-8s %-9s %-4s\n"
+     (format "\n%-60s %-8s %-9s %-4s"
              id
              (propertize type 'face 'magit-dimmed)
              (propertize status 'face 'magit-dimmed)
@@ -159,7 +159,7 @@
         (erase-buffer)
         (insert (format "%-11s : %s\n" "Server" kapacitor-url))
         (insert (format "%-11s : %d\n" "Total Tasks" (seq-length tasks)))
-        (insert (propertize (format "%-60s %-8s %-9s %-4s\n"
+        (insert (propertize (format "%-60s %-8s %-9s %-4s"
                                     "ID" "Type" "Status" "Executing")
                             'face 'magit-section-heading))
           (dolist (task-line task-lines)
