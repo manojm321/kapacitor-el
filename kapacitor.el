@@ -174,7 +174,8 @@
   (interactive)
   (let* ((taskid (get-text-property (point) 'kapacitor-nav)))
     (if taskid
-        (kapacitor-get-task-info 'kapacitor-populate-task-info taskid ))))
+        (kapacitor-get-task-info 'kapacitor-populate-task-info taskid )
+      (message "No task under point"))))
 
 (defun kapacitor-maybe-fontify-tickscript (script)
   "If available, return syntax highlighted SCRIPT with ‘tickscript-mode’."
