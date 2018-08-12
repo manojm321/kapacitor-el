@@ -2,6 +2,8 @@
 
   A magit like interface for [[https://docs.influxdata.com/kapacitor/][Kapacitor]]
 
+  [[file:kapacitor-overview.png][kapacitor-overview]]
+
 * Installation
 
   #+BEGIN_SRC sh
