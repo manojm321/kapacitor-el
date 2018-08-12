@@ -61,3 +61,6 @@
 * Contribute
 
   Yes please! open github [[https://github.com/Manoj321/kapacitor-el/issues][issues]]
+* Credits
+
+  Thanks to [[https://github.com/chrisbarrett/kubernetes-el][kubernetes-el]] for inspiring me!
