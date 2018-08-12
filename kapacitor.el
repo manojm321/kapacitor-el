@@ -311,10 +311,10 @@ On error call CB-ERR with err buffer."
   "Set `kapacitor-url`."
   (interactive)
   (let* ((server-url (completing-read "Server URL: " kapacitor-url-list)))
-    (if (member server-url kapacitor-url-list)
-        (setq kapacitor-url server-url)
-      (push server-url kapacitor-url-list)))
-  (kapacitor-overview t))
+    (unless (member server-url kapacitor-url-list)
+      (push server-url kapacitor-url-list))
+    (setq kapacitor-url server-url)
+  (kapacitor-overview t)))
 
 (defun kapacitor-disable-task ()
   "Disable kapacitor task under point."
