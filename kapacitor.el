@@ -358,10 +358,11 @@ On error call CB-ERR with err buffer."
     "Popup commands"
     (?S "Stats" kapacitor-show-stats-popup)
     "Task Commands"
-    (?\r  "Show"    kapacitor-show-task)
-    (?d   "Disable" kapacitor-disable-task)
-    (?e   "Enable"  kapacitor-enable-task)
-    (?D   "Delete"  kapacitor-delete-task)))
+    (?\r  "Show"     kapacitor-show-task)
+    (?d   "Disable"  kapacitor-disable-task)
+    (?e   "Enable"   kapacitor-enable-task)
+    (?D   "Delete"   kapacitor-delete-task)
+    (?g   "Refresh"  kapacitor-overview-refresh)))
 
 
 ;;;;; Commands
