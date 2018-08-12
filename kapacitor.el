@@ -56,7 +56,6 @@
 
     ;; popups
     (define-key keymap (kbd "?") #'kapacitor-overview-popup)
-    (define-key keymap (kbd "s") #'kapacitor-show-task-popup)
     (define-key keymap (kbd "S") #'kapacitor-show-stats-popup)
 
     keymap)
@@ -301,11 +300,6 @@ On error call CB-ERR with err buffer."
 
 ;;;;; magit popups
 
-(magit-define-popup kapacitor-show-task-popup
-  "Popup console for show command."
-  :group 'kapacitor
-  :actions
-  '((?s "Show" kapacitor-show-task-info)))
 
 (magit-define-popup kapacitor-show-stats-popup
   "Popup console for stats command."
