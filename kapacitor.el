@@ -53,6 +53,9 @@
     (define-key keymap (kbd "g")   #'kapacitor-overview-refresh)
     (define-key keymap (kbd "RET") #'kapacitor-show-task-info)
     (define-key keymap (kbd "c")   #'kapacitor-set-url)
+    (define-key keymap (kbd "d")   #'kapacitor-disable-task)
+    (define-key keymap (kbd "e")   #'kapacitor-enable-task)
+    (define-key keymap (kbd "D")   #'kapacitor-delete-task)
 
     ;; popups
     (define-key keymap (kbd "?") #'kapacitor-overview-popup)
@@ -140,6 +143,22 @@ On error call CB-ERR with err buffer."
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
                          (funcall cb json)))))
+
+(defun kapacitor-patch-task (cb taskid body)
+  "Patch a TASKID with given BODY and call CB."
+  (kapacitor-curl-ep (concat "/kapacitor/v1/tasks/" taskid)
+                     "PATCH"
+                     (lambda (_)
+                       (funcall cb))
+                     nil
+                     body))
+
+(defun kapacitor--delete-task (cb taskid)
+  "Delete a given TASKID and call CB."
+  (kapacitor-curl-ep (concat "/kapacitor/v1/tasks/" taskid)
+                     "DELETE"
+                     (lambda (_)
+                       (funcall cb))))
 
 ;;;;; kapacitor-mode functions
 
@@ -297,9 +316,31 @@ On error call CB-ERR with err buffer."
       (push server-url kapacitor-url-list)))
   (kapacitor-overview t))
 
+(defun kapacitor-disable-task ()
+  "Disable kapacitor task under point."
+  (interactive)
+  (let* ((taskid (get-text-property (point) 'kapacitor-nav)))
+    (if taskid
+          (kapacitor-patch-task 'kapacitor-overview-refresh taskid '(("status" . "disabled")))
+      (message "No task under point"))))
+
+(defun kapacitor-enable-task ()
+  "Enable kapacitor task under point."
+  (interactive)
+  (let* ((taskid (get-text-property (point) 'kapacitor-nav)))
+    (if taskid
+        (kapacitor-patch-task 'kapacitor-overview-refresh taskid '(("status" . "enabled")))
+      (message "No task under point"))))
+
+(defun kapacitor-delete-task ()
+  "Delete kapacitor task under point."
+  (interactive)
+  (let* ((taskid (get-text-property (point) 'kapacitor-nav)))
+    (if taskid
+        (kapacitor--delete-task 'kapacitor-overview-refresh taskid)
+      (message "No task under point"))))
 
 ;;;;; magit popups
-
 
 (magit-define-popup kapacitor-show-stats-popup
   "Popup console for stats command."
@@ -313,9 +354,14 @@ On error call CB-ERR with err buffer."
   :group 'kapacitor
   :actions
   '("Environment"
-    (?c "Change Configuration" kapacitor-set-url)
+    (?c "Change server" kapacitor-set-url)
     "Popup commands"
-    (?S "Stats" kapacitor-show-stats-popup)))
+    (?S "Stats" kapacitor-show-stats-popup)
+    "Commands"
+    (?d "Disable" kapacitor-disable-task)
+    (?e "Enable" kapacitor-enable-task)
+    (?D "Delete" kapacitor-delete-task)))
+
 
 ;;;;; Commands
 
