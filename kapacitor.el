@@ -51,7 +51,7 @@
     (define-key keymap [tab]       #'magit-section-toggle)
     (define-key keymap (kbd "q")   #'quit-window)
     (define-key keymap (kbd "g")   #'kapacitor-overview-refresh)
-    (define-key keymap (kbd "RET") #'kapacitor-show-task-info)
+    (define-key keymap (kbd "RET") #'kapacitor-show-task)
     (define-key keymap (kbd "c")   #'kapacitor-set-url)
     (define-key keymap (kbd "d")   #'kapacitor-disable-task)
     (define-key keymap (kbd "e")   #'kapacitor-enable-task)
@@ -205,7 +205,7 @@ On error call CB-ERR with err buffer."
         (pop-to-buffer buf)
         (goto-char (point-min))))))
 
-(defun kapacitor-show-task-info ()
+(defun kapacitor-show-task ()
   "Run kapacitor show task command on task at point."
   (interactive)
   (let* ((taskid (get-text-property (point) 'kapacitor-nav)))
@@ -357,10 +357,11 @@ On error call CB-ERR with err buffer."
     (?c "Change server" kapacitor-set-url)
     "Popup commands"
     (?S "Stats" kapacitor-show-stats-popup)
-    "Commands"
-    (?d "Disable" kapacitor-disable-task)
-    (?e "Enable" kapacitor-enable-task)
-    (?D "Delete" kapacitor-delete-task)))
+    "Task Commands"
+    (?\r  "Show"    kapacitor-show-task)
+    (?d   "Disable" kapacitor-disable-task)
+    (?e   "Enable"  kapacitor-enable-task)
+    (?D   "Delete"  kapacitor-delete-task)))
 
 
 ;;;;; Commands
