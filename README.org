@@ -41,15 +41,18 @@
 
 ** Key Bindings
 
-   |-----+--------------------------------------------|
-   | Key | Description                                |
-   |-----+--------------------------------------------|
-   | RET | If point on task, kapacitor show task info |
-   | c   | change kapacitor server url                |
-   | g   | refresh overview                           |
-   | S-g | show general stats                         |
-   | S-i | show ingress stats(not implemented yet)    |
-   |-----+--------------------------------------------|
+   |-----+-----------------------------------------|
+   | Key | Description                             |
+   |-----+-----------------------------------------|
+   | RET | show task info under point              |
+   | d   | disable task under point                |
+   | e   | enable task under point                 |
+   | D   | delete task under point                 |
+   | g   | refresh buffer                          |
+   | c   | change server url                       |
+   | S-g | show general stats                      |
+   | S-i | show ingress stats(not implemented yet) |
+   |-----+-----------------------------------------|
 
 * License
 
