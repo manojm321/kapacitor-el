@@ -381,7 +381,7 @@ the server is not reachable."
 (define-derived-mode kapacitor-mode special-mode "Kapacitor"
   "Base mode for Kapacitor modes.
 
-\\{kubernetes-mode-map}"
+\\{kapacitor-mode-map}"
   :group 'kapacitor
   (buffer-disable-undo))
 
