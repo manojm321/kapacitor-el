@@ -76,33 +76,37 @@
       (ignore-errors (delete-process proc))
       (ignore-errors (kill-buffer buf)))))
 
-(defun kapacitor-curl-ep (ep on-success &optional on-error)
-  "Curl the endpoint EP and call ON-SUCCESS if the exit code is 0.
+(defun kapacitor-curl-ep (ep method on-success &optional on-error data)
+  "Curl the endpoint EP with METHOD and call ON-SUCCESS if the exit code is 0.
 
 call ON-ERROR on any other exit code.  Both callbacks will receive
-the result of the call as an argument."
+the result of the call as an argument.  DATA will be sent in request body as json."
   (let* ((buf (generate-new-buffer " kapacitor"))
          (err-buf (generate-new-buffer " kapacitor-err"))
-         (command (list "curl" (concat kapacitor-url ep))))
-         (make-process
-                :name "kapacitor"
-                :buffer buf
-                :stderr err-buf
-                :command command
-                :noquery t
-                :connection-type 'pipe'
-                :sentinel
-                (lambda (proc _)
-                  (unwind-protect
-                      (let* ((exit-code (process-exit-status proc)))
-                        (cond
-                         ((zerop exit-code)
-                          (funcall on-success buf))
-                         (t
-                          (if on-error
-                              (funcall on-error err-buf)
-                            (message (format "%s Failed with exit code %d" command exit-code))))))
-                    (kapacitor-process-kill-quietly proc))))
+         (command (list "curl"
+                        "-H" "Content-Type: application/json"
+                        "-d" (json-encode data)
+                        "-X" method
+                        (concat kapacitor-url ep))))
+    (make-process
+     :name "kapacitor"
+     :buffer buf
+     :stderr err-buf
+     :command command
+     :noquery t
+     :connection-type 'pipe'
+     :sentinel
+     (lambda (proc _)
+       (unwind-protect
+           (let* ((exit-code (process-exit-status proc)))
+             (cond
+              ((zerop exit-code)
+               (funcall on-success buf))
+              (t
+               (if on-error
+                   (funcall on-error err-buf)
+                 (message (format "%s Failed with exit code %d" command exit-code))))))
+         (kapacitor-process-kill-quietly proc))))
 
     ;; Clean up stderr buffer when stdout buffer is killed.
     (with-current-buffer buf
@@ -113,6 +117,7 @@ the result of the call as an argument."
 
 On error call CB-ERR with err buffer."
   (kapacitor-curl-ep "/kapacitor/v1/tasks?fields=executing&fields=status&fields=type"
+                     "GET"
                      (lambda (buf)
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
@@ -122,6 +127,7 @@ On error call CB-ERR with err buffer."
 (defun kapacitor-get-task-info (cb taskid)
   "Fetch task info for TASKID and call CB with resulting json."
   (kapacitor-curl-ep (concat "/kapacitor/v1/tasks/" taskid)
+                     "GET"
                      (lambda (buf)
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
@@ -130,6 +136,7 @@ On error call CB-ERR with err buffer."
 (defun kapacitor-get-debug-vars (cb)
   "Fetch debug vars and call CB with resulting json string."
   (kapacitor-curl-ep "/kapacitor/v1/debug/vars"
+                     "GET"
                      (lambda (buf)
                        (let ((json (with-current-buffer buf
                                      (json-read-from-string (buffer-string)))))
