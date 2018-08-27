@@ -224,6 +224,16 @@ On error call CB-ERR with err buffer."
         (buffer-string))
     script))
 
+(defun kapacitor-dot-fontify-errors (dot)
+  "If there are any errors in DOT graph highlight them."
+  (with-temp-buffer
+    (insert dot)
+    (goto-char (point-min))
+    (while (re-search-forward "\\(errors=\"\\([0-9]+\\)\"\\)" nil t)
+      (unless (string= (match-string 2) "0")
+        (put-text-property  (match-beginning 1) (match-end 1) 'face 'error)))
+    (buffer-string)))
+
 (defun kapacitor-populate-task-info (response)
   "Populate given task info RESPONSE into a buffer."
   (let* ((task-buf (get-buffer-create "*kapacitor task info*")))
@@ -267,7 +277,7 @@ On error call CB-ERR with err buffer."
         (insert "TICKscript:\n")
         (insert (kapacitor-maybe-fontify-tickscript script))
         (insert "DOT:\n")
-        (insert dot)
+        (insert (kapacitor-dot-fontify-errors dot))
         (goto-char (point-min))
         (view-mode)
         (pop-to-buffer task-buf)))))
