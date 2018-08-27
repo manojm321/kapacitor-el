@@ -178,7 +178,7 @@ On error call CB-ERR with err buffer."
       ('t (setq executing "true"))
       (:json-false (setq executing "false" task-face 'warning)))
     (propertize
-     (format "\n%-60s %-8s %-9s %-4s"
+     (format "\n  %-60s %-8s %-9s %-4s"
              id
              (propertize type 'face 'magit-dimmed)
              (propertize status 'face 'magit-dimmed)
@@ -193,14 +193,21 @@ On error call CB-ERR with err buffer."
              (task-lines (mapcar #'kapacitor--format-task-line tasks))
              (inhibit-read-only t))
         (erase-buffer)
-        (insert (format "%-11s : %s\n" "Server" kapacitor-url))
-        (insert (format "%-11s : %d\n" "Total Tasks" (seq-length tasks)))
-        (insert (propertize (format "%-60s %-8s %-9s %-4s"
-                                    "ID" "Type" "Status" "Executing")
-                            'face 'magit-section-heading))
-          (dolist (task-line task-lines)
-            (insert task-line))
+        (magit-insert-section (rootsection)
+          (insert (propertize (format "%-11s" "Server")
+                              'face 'magit-section-heading))
+          (insert (propertize (format "%s" kapacitor-url)
+                              'face 'magit-branch-local))
+          (insert "\n")
+          (magit-insert-section (taskssection)
+            (magit-insert-heading "Tasks:")
+            (insert (propertize (format "  %-60s %-8s %-9s %-4s"
+                                        "ID" "Type" "Status" "Executing")
+                                'face 'magit-section-heading))
 
+            (dolist (task-line task-lines)
+              (magit-insert-section (tasksection)
+                (insert task-line)))))
         (kapacitor-mode)
         (pop-to-buffer buf)
         (goto-char (point-min))))))
