@@ -6,13 +6,25 @@
 
 * Installation
 
-  #+BEGIN_SRC sh
-    git clone http://github.com/Manoj321/kapacitor-el ~/.emacs.d/site-lisp/kapacitor-el  
+  Kapacitor is now available on melpa
+
+** With use-package
+
+   #+BEGIN_SRC emacs-lisp
+    (use-package kapacitor
+      :ensure t
+      :config (setq kapacitor-url-list '("http://localhost:9092" "http://kapacitor:9092")))
   #+END_SRC
 
-  Add the following to init.el
+** With package install
+
+   #+BEGIN_SRC emacs-lisp
+    M-x package-install kapacitor
+  #+END_SRC
+
+  Add require to appropriate init script
+
   #+BEGIN_SRC emacs-lisp
-    (add-to-list 'load-path "~/.emacs.d/site-lisp/kapacitor-el/")
     (require 'kapacitor)
   #+END_SRC
 
