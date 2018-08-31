@@ -1,5 +1,5 @@
 * kapacitor-el
-  [[https://melpa.org/#/kapacitor][file:https://melpa.org/packages/kapacitor-badge.svg]
+  [[https://melpa.org/#/kapacitor][file:https://melpa.org/packages/kapacitor-badge.svg]]
 
   A magit like interface for [[https://docs.influxdata.com/kapacitor/][Kapacitor]]
 
