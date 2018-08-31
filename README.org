@@ -22,9 +22,11 @@
     M-x package-install kapacitor
   #+END_SRC
 
-  Add require to appropriate init script
+  set kapacitor-url-list to a set of kapacitor servers and add require to
+  appropriate init script:
 
   #+BEGIN_SRC emacs-lisp
+    (setq kapacitor-url-list ("http://localhost:9092" "http://server:10000"))
     (require 'kapacitor)
   #+END_SRC
 
@@ -37,12 +39,6 @@
    #+END_SRC
 
 * Usage
-
-** Setup kapacitor-url
-
-   #+BEGIN_SRC emacs-lisp
-     (setq kapacitor-url-list ("http://localhost:9092" "http://server:10000"))
-   #+END_SRC
 
 ** Display Tasks
 
