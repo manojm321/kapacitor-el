@@ -1,5 +1,6 @@
 * kapacitor-el
-  [[https://melpa.org/#/kapacitor][file:https://melpa.org/packages/kapacitor-badge.svg]]
+  [[https://melpa.org/#/kapacitor][file:https://melpa.org/packages/kapacitor-badge.svg]] [[http://www.gnu.org/licenses/gpl-3.0.txt][file:https://img.shields.io/badge/license-GPL_v3-green.svg]]
+
 
   A magit like interface for [[https://docs.influxdata.com/kapacitor/][Kapacitor]]
 
