@@ -187,8 +187,54 @@ On error call CB-ERR with err buffer."
                             'face 'magit-dimmed
                             'read-only t))
         (insert "\n\n")
-        (apply #'start-process bufname buf "curl" args)
+        (let ((proc (apply #'start-process bufname buf "curl" args)))
+          (set-process-filter proc #'kapacitor--logs-process-filter))
         (pop-to-buffer buf)))))
+
+(defun kapacitor--logs-process-filter (proc output)
+  "Pretty print logs.
+
+ PROC is the log process and OUTPUT is stdout and stderr."
+  (when (buffer-live-p (process-buffer proc))
+    (with-current-buffer (process-buffer proc)
+      (let ((moving (= (point) (process-mark proc))))
+        (save-excursion
+          (let* ((output (concat incomplete-process-output output))
+                 (lines (split-string output "\n" t " ")))
+            (dolist (line lines)
+              (condition-case nil
+                  (let* ((json (json-read-from-string line)))
+                    ;; Insert the text, advancing the process marker.
+                    (goto-char (process-mark proc))
+                    (insert (propertize (cdr-safe (assoc 'ts json))
+                                        'face 'magit-dimmed))
+                    (insert " | ")
+                    (insert (cdr-safe (assoc 'service json)))
+                    (insert " | ")
+                    (insert (kapacitor--propertize-level (cdr-safe (assoc 'lvl json))))
+                    (insert " | ")
+                    (insert (propertize (cdr-safe (assoc 'msg json))
+                                        'face 'magit-sequence-part))
+                    (insert " | ")
+                    (dolist (kv json)
+                      (unless (member (car kv) (list 'ts 'service 'lvl 'msg))
+                        (insert (cdr kv))
+                        (insert " | ")))
+                    (insert "\n")
+                    (set-marker (process-mark proc) (point)))
+                ;; if json parsing errors out then probably the line is
+                ;; incomplete store it and prepend it with future output
+                (error (setq incomplete-process-output line))))))
+        (if moving (goto-char (process-mark proc)))))))
+
+
+(defun kapacitor--propertize-level (level)
+  "Propertize log LEVEL string."
+  (propertize (upcase level) 'face (pcase level
+                                     ("info"  'magit-filename)
+                                     ("error" 'magit-log-author)
+                                     ("debug" 'magit-diff-hunk-region)
+                                     ("warn"  'magit-reflog-checkout))))
 
 ;;;;; kapacitor-mode functions
 
