@@ -120,7 +120,7 @@ the result of the call as an argument.  DATA will be sent in request body as jso
   "Fetch all tasks and call CB with resulting json string.
 
 On error call CB-ERR with err buffer."
-  (kapacitor-curl-ep "/kapacitor/v1/tasks?fields=executing&fields=status&fields=type"
+  (kapacitor-curl-ep "/kapacitor/v1/tasks?limit=-1&fields=executing&fields=status&fields=type"
                      "GET"
                      (lambda (buf)
                        (let ((json (with-current-buffer buf
